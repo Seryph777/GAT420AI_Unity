@@ -19,3 +19,4 @@ public abstract class AIMovement : MonoBehaviour
     public abstract void Stop();
     public abstract void Resume();
 }
+

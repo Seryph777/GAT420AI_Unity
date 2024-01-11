@@ -1,21 +1,33 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
-public abstract class AIMovement : MonoBehaviour
+public class AIDistancePerception : AIPerception
 {
-    [Range(1, 10)] public float maxSpeed = 5;
-    [Range(1, 10)] public float minSpeed = 5;
-    [Range(1, 100)] public float maxForce = 5;
-    [Range(1, 360)] public float turnRate = 90;
+    public override GameObject[] GetGameObjects()
+    {
+        List<GameObject> result = new List<GameObject>();
 
-    public virtual Vector3 Velocity { get; set; } = Vector3.zero;
-    public virtual Vector3 Acceleration { get; set; } = Vector3.zero;
-    public virtual Vector3 Direction { get { return Velocity.normalized; } }
-    public virtual Vector3 Destination { get; set; } = Vector3.zero;
+        Collider[] colliders = Physics.OverlapSphere(transform.position, distance);
+        foreach (Collider collider in colliders)
+        {
+            // Check if collision is self, skip if so
+            if (collider.gameObject == gameObject) continue;
+            if (tagName == "" || collider.CompareTag(tagName))
+            {
+                // calculate angle from transform forward vector to direction of game object
+                Vector3 direction = (collider.transform.position - transform.position).normalized;
+                float angle = Vector3.Angle(transform.forward, direction);
+                // if angle is less than max angle, add game object
+                if (angle <= maxAngle)
+                {
+                    result.Add(collider.gameObject);
+                }
+            }
+        }
 
-    public abstract void ApplyForce(Vector3 force);
-    public abstract void MoveTowards(Vector3 target);
-    public abstract void Stop();
-    public abstract void Resume();
+        return result.ToArray();
+
+    }
 }
